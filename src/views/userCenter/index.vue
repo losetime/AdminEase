@@ -74,9 +74,9 @@
 
 <script setup lang="ts">
 import { onMounted, ref, createVNode } from 'vue'
-import Header from '@/layout3/Header.vue'
+import Header from '@/layout/Header.vue'
 import Iconfont from '@/components/common/Iconfont.vue'
-import { apiGetUserInfo, apiKillUser } from '@/service/api/setting'
+// import { apiGetUserInfo, apiKillUser } from '@/service/api/setting'
 import UpdatePassword from '@/components/userCenter/UpdatePassword.vue'
 import localeAvatar from '@/assets/images/common/avatar.png'
 import { message, Modal } from 'ant-design-vue'
@@ -104,10 +104,10 @@ onMounted(() => {
  * @desc 获取用户信息
  */
 const getUserInfo = async () => {
-  const { code, data } = await apiGetUserInfo()
-  if (code === 20000) {
-    userInfo.value = { ...data.user, roleGroup: data.roleGroup }
-  }
+  // const { code, data } = await apiGetUserInfo()
+  // if (code === 20000) {
+  //   userInfo.value = { ...data.user, roleGroup: data.roleGroup }
+  // }
 }
 
 /**
