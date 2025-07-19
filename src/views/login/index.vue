@@ -132,17 +132,18 @@ const loginSubmit = async () => {
       console.log(currentRoute)
       const routerName = currentRoute[0].name
       router.replace({ name: routerName })
-    } else if (code === 40010 || code === 40011) {
-      isForceUpdatePassword.value = true
-    } else {
-      getCode()
     }
+    // else if (code === 40010 || code === 40011) {
+    //   isForceUpdatePassword.value = true
+    // } else {
+    //   getCode()
+    // }
   })
 }
 
 const reloadLogin = () => {
   resetFields()
-  getCode()
+  // getCode()
   isForceUpdatePassword.value = false
 }
 </script>

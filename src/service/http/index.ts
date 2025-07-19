@@ -5,7 +5,7 @@ import { setupInterceptors } from './interceptor'
 
 // 创建 axios 请求实例
 export const serviceAxios: AxiosInstance = axios.create({
-  baseURL: '', // 基础请求地址
+  baseURL: 'http://127.0.0.1:9084', // 基础请求地址
   timeout: 10000, // 请求超时设置
   withCredentials: false, // 跨域请求是否需要携带 cookie
 })
