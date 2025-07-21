@@ -4,15 +4,20 @@
       <template #search>
         <Search>
           <template #searchItems>
-            <a-form layout="inline" :model="searchParams">
+            <a-form :model="searchParams">
               <a-form-item label="用户昵称">
                 <a-input v-model:value="searchParams.nickname" placeholder="请输入" />
               </a-form-item>
               <a-form-item label="用户账号">
                 <a-input v-model:value="searchParams.username" placeholder="请输入" />
               </a-form-item>
-              <a-form-item label="分析时间">
-                <a-range-picker v-model:value="analyseTime" show-time valueFormat="YYYY-MM-DD HH:mm:ss" />
+              <a-form-item label="用户状态">
+                <a-select
+                  v-model:value="searchParams.status"
+                  placeholder="请选择"
+                  allowClear
+                  :options="AccountStatus"
+                />
               </a-form-item>
               <a-form-item>
                 <a-space>
@@ -31,73 +36,58 @@
       </template>
       <template #table>
         <ym-table
-          rowKey="gmtCreate"
-          :columns="historyRecordColumns"
-          :getTableList="apiGetHistoryRecordList"
+          rowKey="user_id"
+          :columns="userColumns()"
+          :getTableList="apiGetUserList"
           :row-selection="false"
           :params="searchParams"
           table-x="max-content"
           ref="tableInstance"
         >
           <template #action="{ record }">
-            <a-space>
-              <a-button type="primary" size="small" @click="handleEdit(record)">查看</a-button>
-              <a-button type="primary" size="small" @click="handleDownload(record)">下载</a-button>
-              <!--              <a-button type="link" size="small" danger @click="handleDel(record.address)">删除</a-button>-->
+            <a-space v-if="record.username !== 'admin'">
+              <a-button type="primary" size="small" @click="handleEdit(record)">修改</a-button>
+              <a-button type="primary" size="small" @click="handleUserStatus(record)">
+                {{ record.status === '启用' ? '禁用' : '启用' }}
+              </a-button>
+              <a-button type="primary" size="small" danger @click="handleDel(record.username)">删除</a-button>
             </a-space>
           </template>
         </ym-table>
       </template>
     </CommonMangerPage>
-    <NewRecord ref="detailInstance" :getSourceData="getSourceData" :handleRefresh="handleRefresh" />
-    <RecordDetail ref="recordDetailInstance" />
+    <user-detail ref="detailInstance" :getSourceData="getSourceData" :handleRefresh="handleRefresh" />
+    <modify-password ref="passwordInstance" />
+    <ForbiddenUser ref="forbiddenUserInstance" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, watchEffect } from 'vue'
+import { ref, reactive } from 'vue'
 import YmTable from '@/components/common/YmTable.vue'
-import NewRecord from '@/components/history-record/NewRecord.vue'
-import RecordDetail from '@/components/history-record/RecordDetail.vue'
-import { apiGetHistoryRecordList } from '@/service/api/historyRecord'
-import { historyRecordColumns } from '@/columns/history-record'
+import UserDetail from '@/components/setting/UserDetail.vue'
+import ModifyPassword from '@/components/setting/ModifyPassword.vue'
+import ForbiddenUser from '@/components/setting/ForbiddenUser.vue'
+import { apiGetUserList, apiUserStatus } from '@/service/api/setting'
+import { userColumns } from '@/columns/setting'
 import { actionTypeEnum } from '@/enums/commonEnum'
-// import { message } from 'ant-design-vue'
+import { message } from 'ant-design-vue'
 import { YmModal } from '@/utils/antd'
+import { AccountStatus } from '@/enums/settingEnum'
 import CommonMangerPage from '@/components/common/CommonMangerPage.vue'
 import Search from '@/components/common/Search.vue'
-
-onMounted(async () => {})
-
-/**
- ********************************* 表格逻辑 ******************************************
- */
 
 // 表格实例
 const tableInstance = ref()
 
 // 用户详情实例
 const detailInstance = ref()
-const recordDetailInstance = ref()
 
 // 搜索参数
 const searchParams = reactive<any>({
   nickname: '',
   username: '',
-  startTime: '',
-  endTime: '',
-})
-
-const analyseTime = ref<string[]>([])
-
-watchEffect(() => {
-  if (analyseTime.value.length > 0) {
-    searchParams.startTime = analyseTime.value[0]
-    searchParams.endTime = analyseTime.value[1]
-  } else {
-    searchParams.startTime = ''
-    searchParams.endTime = ''
-  }
+  status: null,
 })
 
 // 重新获取列表
@@ -109,10 +99,8 @@ const handleResetSearch = () => {
   Object.assign(searchParams, {
     nickname: '',
     username: '',
-    startTime: '',
-    endTime: '',
+    status: null,
   })
-  analyseTime.value = []
   handleReacquire(1)
 }
 
@@ -133,13 +121,13 @@ const getSourceData = () => {
 /**
  * @desc 列表删除
  */
-const handleDel = (address: string) => {
+const handleDel = (username: string) => {
   YmModal.delete(async () => {
-    // const { code } = await apiAddressStatus({ address, status: 3 })
-    // if (code === 20001) {
-    //   message.success('删除成功')
-    //   tableInstance.value.getSourceData()
-    // }
+    const { code } = await apiUserStatus({ username, status: 3 })
+    if (code === 20001) {
+      message.success('删除成功')
+      tableInstance.value.getSourceData()
+    }
   })
 }
 
@@ -154,46 +142,20 @@ const handleAdd = () => {
  * @desc 编辑
  */
 const handleEdit = (record: any) => {
-  recordDetailInstance.value.initModal(record.result_json)
+  detailInstance.value.initModal(actionTypeEnum.EDIT, record)
 }
+
+const forbiddenUserInstance = ref()
 
 /**
  * @author: wwp
  * @createTime: 2025/7/16 20:33
- * @description: 下载
+ * @description: 用户状态
  * @param record
  * @return
  */
-const handleDownload = async (record: any) => {
-  const urls = [record.resultfile, record.biaozhunfile, record.duibifile]
-  downloadFiles(urls)
-}
-
-const downloadFiles = (urls: string[]) => {
-  urls.forEach((url, index) => {
-    // 创建一个新的 iframe 元素
-    let iframe = document.createElement('iframe')
-
-    // 将 iframe 的 'src' 属性设置为文件的 URL
-    iframe.src = url
-
-    // 设置 iframe 的 'id' 以便稍后移除
-    iframe.id = 'download_iframe_' + index
-
-    // 将 iframe 设置为隐藏
-    iframe.style.display = 'none'
-
-    // 将 iframe 添加到页面中
-    document.body.appendChild(iframe)
-  })
-
-  // 一段时间后移除这些 iframe
-  setTimeout(() => {
-    urls.forEach((url, index) => {
-      let iframe = document.getElementById('download_iframe_' + index)
-      document.body.removeChild(iframe)
-    })
-  }, 1000 * 60)
+const handleUserStatus = async (record: any) => {
+  forbiddenUserInstance.value.initModal(record)
 }
 </script>
 
@@ -201,6 +163,13 @@ const downloadFiles = (urls: string[]) => {
 .user-wrapper {
   width: 100%;
   height: 100%;
+  .search-wrapper {
+    ::v-deep(.ant-form) {
+      .ant-form-item-label {
+        min-width: 100px;
+      }
+    }
+  }
 
   .handle-wrap {
     padding: 32px 32px 0 32px;

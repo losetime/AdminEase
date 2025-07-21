@@ -44,7 +44,7 @@ export const handleBusinessExceptionMiddleware = (res: any) => {
       case 40001:
         createModal.error({
           title: '提示',
-          content: data.msg,
+          content: data.error,
           onOk() {
             appStore.$reset()
             router.replace('/login')
@@ -54,7 +54,7 @@ export const handleBusinessExceptionMiddleware = (res: any) => {
       case 40009:
         createModal.error({
           title: '提示',
-          content: data.msg,
+          content: data.error,
           onOk() {
             appStore.$reset()
             router.replace('/login')
@@ -62,7 +62,7 @@ export const handleBusinessExceptionMiddleware = (res: any) => {
         })
         break
       default:
-        createMessage.error(data.msg)
+        createMessage.error(data.error)
     }
   }
   return Promise.resolve(data)
