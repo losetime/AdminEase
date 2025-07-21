@@ -9,17 +9,17 @@
     width="600px"
   >
     <a-form :label-col="labelCol" labelAlign="left">
-      <a-form-item label="停用原因" v-bind="validateInfos.reason">
+      <a-form-item label="禁用原因" v-bind="validateInfos.reason">
         <a-input v-model:value="detailInfo.reason" placeholder="请输入" />
       </a-form-item>
-      <a-form-item label="停用时间" v-bind="validateInfos.stop_time">
-        <a-date-picker
-          v-model:value="detailInfo.stop_time"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          show-time
-          placeholder="请选择"
-        />
-      </a-form-item>
+      <!--      <a-form-item label="停用时间" v-bind="validateInfos.stop_time">-->
+      <!--        <a-date-picker-->
+      <!--          v-model:value="detailInfo.stop_time"-->
+      <!--          value-format="YYYY-MM-DD HH:mm:ss"-->
+      <!--          show-time-->
+      <!--          placeholder="请选择"-->
+      <!--        />-->
+      <!--      </a-form-item>-->
     </a-form>
   </a-modal>
 </template>
@@ -30,7 +30,6 @@ import { Form, message } from 'ant-design-vue'
 import { apiUserStatus } from '@/service/api/setting'
 
 const props = defineProps<{
-  handleRefresh: Function
   getSourceData: Function
 }>()
 
@@ -42,12 +41,10 @@ const title = ref<string>('更改状态')
 
 const detailInfo = reactive({
   reason: '',
-  stop_time: '',
 })
 
 const formRules = reactive({
-  reason: [{ required: true, message: '用户昵称不能为空', trigger: 'change' }],
-  stop_time: [{ required: true, message: '登录账号不能为空', trigger: 'change' }],
+  reason: [{ required: true, message: '禁用原因不能为空', trigger: 'change' }],
 })
 
 const useForm = Form.useForm
@@ -71,7 +68,7 @@ const handleConfirm = async () => {
     const { code } = await apiUserStatus(detailInfo)
     if (code === 20001) {
       message.success('操作成功')
-      props.handleRefresh()
+      props.getSourceData()
       handleCancel()
     }
   })

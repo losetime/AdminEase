@@ -58,7 +58,7 @@
     </CommonMangerPage>
     <user-detail ref="detailInstance" :getSourceData="getSourceData" :handleRefresh="handleRefresh" />
     <modify-password ref="passwordInstance" />
-    <ForbiddenUser ref="forbiddenUserInstance" />
+    <ForbiddenUser ref="forbiddenUserInstance" :getSourceData="getSourceData" />
   </div>
 </template>
 
@@ -155,7 +155,18 @@ const forbiddenUserInstance = ref()
  * @return
  */
 const handleUserStatus = async (record: any) => {
-  forbiddenUserInstance.value.initModal(record)
+  if (record.status === '禁用') {
+    const { code } = await apiUserStatus({
+      username: record.username,
+      status: record.status === '启用' ? 2 : 1,
+    })
+    if (code === 20001) {
+      message.success('操作成功')
+      handleReacquire()
+    }
+  } else {
+    forbiddenUserInstance.value.initModal(record)
+  }
 }
 </script>
 
