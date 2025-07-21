@@ -17,6 +17,11 @@ export const addressEncodeColumns = [
     dataIndex: 'gmtCreate',
   },
   {
+    title: '最后一次操作时间',
+    key: 'updateTime',
+    dataIndex: 'updateTime',
+  },
+  {
     title: '操作',
     key: 'action',
     align: 'center',
@@ -52,6 +57,11 @@ export const equipmentColumns = [
     dataIndex: 'gmtCreate',
   },
   {
+    title: '最后一次操作时间',
+    key: 'updateTime',
+    dataIndex: 'updateTime',
+  },
+  {
     title: '操作',
     key: 'action',
     align: 'center',
@@ -75,6 +85,11 @@ export const rulesColumns = [
     title: '添加时间',
     key: 'gmtCreate',
     dataIndex: 'gmtCreate',
+  },
+  {
+    title: '最后一次操作时间',
+    key: 'updateTime',
+    dataIndex: 'updateTime',
   },
   {
     title: '操作',
